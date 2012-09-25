@@ -16,7 +16,7 @@ Here is a full options exemple
     // full options
     $('.my_elements').imgfill(
     {   
-        align       : 'center',     // Set the alignment (center, topleft, top, topright, right, bottomright, bottom, bottomleft, left) case insensitive and shortcut allowed (c, tl, t, tr, r, br, b, bl, l)
+        align       : 'center',     // Set the alignment (center, topleft, top, topright, right, bottomright, bottom, bottomleft, left) case insensitive and shortcuts allowed (c, tl, t, tr, r, br, b, bl, l)
         container   : null,         // Define the container class name
         $container  : $(window)     // if you prefer, define directly the container DOM element (It will override "container" option)
     });
