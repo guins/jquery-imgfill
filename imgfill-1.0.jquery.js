@@ -15,7 +15,7 @@
     $('.my_elements').imgfill(
     {	
     	align 		: 'center', 	// Set the alignment (center, topleft, top, topright, right, bottomright, bottom, bottomleft, left) case insensitive and shortcut allowed (c, tl, t, tr, r, br, b, bl, l)
-    	container 	: null,			// Define the container class name
+    	container 	: null,			// Define the parent selector
 		$container 	: $(window) 	// if you prefer, define directly the container DOM element (It will override "container" option)
     });
 |
@@ -24,43 +24,48 @@
 {
 	var imgFill = (function()
 	{
-		var settings = {
-				isInit  : false,
-				aImgs 	: []
-			},
+		var _isInit = false,
+			_$allImgs = $(),
 			_w = $(window);
 
 		function _init()
 		{
-			settings.isInit = true;
-			_w.bind("load.imgfill resize.imgfill", function() 
-			{ 
-				$.each(settings.aImgs, function(i,$img)
-				{
-					if($img && $img.length>0) resizeAndReplaceImg($img);
-				});
+			_isInit = true;
+
+			_w.on("load.imgfill resize.imgfill", function(event){
+				_$allImgs.trigger('resizeAndReplace');
 			});
 		}
 
 		function onImgLoaded($img)
 		{
-			if(!settings.isInit) _init();
+			if(!_isInit) _init();
 
-			$img.data('originalHeight', $img.height() );
-			$img.data('originalWidth', $img.width() );
+			$img
+				.data({
+					originalHeight : $img.height(),
+					originalWidth  : $img.width()
+				})
+				.off('.imgfill')
+				.on('resizeAndReplace.imgfill', function(){
+					_resizeAndReplaceImg( $(this) );
+				})
+				.trigger('resizeAndReplace')
+				.on('remove.imgfill', function(){
+					_$allImgs = _$allImgs.not( $(this) );
+				});
 
-			settings.aImgs.push($img);
-			resizeAndReplaceImg($img);
+			_$allImgs = _$allImgs.add($img);
 		}
 
-		function resizeAndReplaceImg($img)
+		function _resizeAndReplaceImg($img)
 		{
 			var options = $img.data('options'),
 				ratio = $img.data('originalHeight') / $img.data('originalWidth'),
 				containerWidth = options.$container.width(),
 				containerHeight = options.$container.height(),
 				widthTo, heightTo, leftTo, rightTo, topTo, bottomTo;
-			
+
 			// Scale
 			if ((containerHeight/containerWidth) > ratio){
 				heightTo = containerHeight;
@@ -147,28 +152,28 @@
 		}
 
 		return {
-			onImgLoaded 		: onImgLoaded,
-			resizeAndReplaceImg : resizeAndReplaceImg
+			onImgLoaded : onImgLoaded
 		};
 	})();
 
 	$.fn.imgfill = function(options) {
 
 		var defaults = { 
-				align 		: 'center',
-				container 	: null,
-				$container 	: $(window)
+				align      : 'center',
+				container  : null,
+				$container : $(window)
 			};
 
-		if(options && options.container && options.container!="") {
-			options.$container = $(options.container);
-			options.$container.css('overflow','hidden');
-		}
 		options = $.extend({}, defaults, options);
 		
 		return this.each(function () 
 		{	
 			var $img = $(this);
+
+			if(options.container && (typeof options.container==="string" && options.container!="")) {
+				options.$container = $img.closest(options.container);
+			}
+
 			$img.data('options', options );
 
 			if($img.height() && $img.height()>0)
