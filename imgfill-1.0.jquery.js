@@ -66,6 +66,10 @@
 				containerHeight = options.$container.height(),
 				widthTo, heightTo, leftTo, rightTo, topTo, bottomTo;
 
+			if( !options.$container.is(':visible') ){
+				return false;
+			}
+
 			// Scale
 			if ((containerHeight/containerWidth) > ratio){
 				heightTo = containerHeight;
@@ -163,12 +167,12 @@
 				container  : null,
 				$container : $(window)
 			};
-
-		options = $.extend({}, defaults, options);
 		
 		return this.each(function () 
 		{	
 			var $img = $(this);
+
+			options = $.extend({}, defaults, options);
 
 			if(options.container && (typeof options.container==="string" && options.container!="")) {
 				options.$container = $img.closest(options.container);
